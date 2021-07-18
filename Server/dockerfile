@@ -1,0 +1,18 @@
+FROM python:3.8
+
+WORKDIR /Server
+
+COPY requirements.txt /Server
+
+RUN pip install --upgrade pip -r requirements.txt
+
+COPY . /Server
+
+EXPOSE 5000
+
+ENV FLASK_APP=main.py
+
+CMD flask db migrate
+
+CMD flask db upgrade && python -m flask run --host=0.0.0.0
+

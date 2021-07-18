@@ -1,0 +1,61 @@
+version: '3'
+services:
+
+#  client:
+#    container_name: geo-client
+#    build: ./client
+#    ports:
+#      - "80:80"
+#    depends_on:
+#      - server
+  client:
+    container_name: geo-client
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+#    volumes:
+#      - .:/client
+#      - /client/node_modules
+    environment:
+      - NODE_ENV=production
+#      - NODE_ENV=development
+    ports:
+      - 8080:8080
+    depends_on:
+      - server
+
+  server:
+      build: ./Server
+      container_name: geo-server
+      env_file: Server/store/env.conf
+      environment:
+        # для отладки (при запуске в релиз убрать!)
+        - FLASK_ENV=development
+        ## Позволяет отслеживать процесс работы приложения в командной строке
+#        - PYTHONUNBUFFERED=True
+#        - POSTGRES_USER=postgres
+#        - POSTGRES_PASSWORD=123456789
+#        - POSTGRES_DB=geo_db
+#        - POSTGRES_HOST=postgres
+#        - POSTGRES_PORT=5432
+      restart: on-failure
+      volumes:
+        - ./Server:/Server
+      ports:
+        - "5000:5000"
+      depends_on:
+        - database
+
+  database:
+    container_name: postgres
+    restart: always
+    image: postgres:13
+    env_file: Server/store/env.conf
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  pgdata:
+     external: true
